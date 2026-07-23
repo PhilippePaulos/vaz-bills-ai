@@ -1,0 +1,19 @@
+[project]
+name = "vaz-bills-ai"
+version = "0.1.0"
+description = "Devis/factures VAZ : photo -> extraction LLM -> validation humaine -> PDF"
+requires-python = ">=3.12, <3.13"
+dependencies = [
+    "anthropic>=0.116.0",
+    "jinja2>=3.1.6",
+    "pydantic>=2.13.4",
+    "python-dotenv>=1.2.2",
+    "weasyprint>=69.0",
+]
+
+[dependency-groups]
+dev = [
+    "fonttools>=4.63.0",
+    "pypdf>=6.14.2",
+    "pytest>=9.1.1",
+]

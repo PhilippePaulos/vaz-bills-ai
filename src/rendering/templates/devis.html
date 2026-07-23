@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../static/styles.css">
+<title>{{ d.titre_doc }} {{ d.numero }}</title>
+</head>
+<body>
+
+<!-- Bandeau : répété en haut de CHAQUE page via position:running -->
+<header id="band">
+  <table class="band-table">
+    <tr>
+      <td class="band-logo"><img src="../static/logo_vaz.svg" alt="Entreprise VAZ"></td>
+      <td class="band-coords">
+        <div class="band-name">SAS ENTREPRISE VAZ</div>
+        <div>51 avenue César Collaveri</div>
+        <div>93190 Livry-Gargan</div>
+      </td>
+    </tr>
+  </table>
+</header>
+
+<!-- Pied : répété en bas de chaque page -->
+<footer id="pagefoot">
+  SAS Entreprise VAZ&ensp;•&ensp;SIRET : 789 298 718 00014&ensp;•&ensp;TVA : FR66789298718&ensp;•&ensp;Code APE : 4120A
+</footer>
+
+<main>
+
+  <table class="addr-row">
+    <tr>
+      <td>
+        <div class="eyebrow">Adressé à</div>
+        <div class="client-name">{{ d.client.nom }}</div>
+        {% for l in d.client.adresse %}<div>{{ l }}</div>{% endfor %}
+      </td>
+      <td class="right">
+        <div class="eyebrow">Date d'émission</div>
+        <div>{{ d.lieu_emission }}, le {{ d.date_f }}</div>
+      </td>
+    </tr>
+  </table>
+
+  <h1 class="doc-title">{{ d.titre_doc }} <span class="doc-num">N° {{ d.numero }}</span></h1>
+  <div class="title-rule"></div>
+
+  <div class="ref-block">
+    <div class="eyebrow">Réf. chantier — Affaire</div>
+    {% for l in d.ref_chantier %}<div class="ref-line">{{ l }}</div>{% endfor %}
+  </div>
+
+  <p class="nature">{{ d.nature_travaux }}</p>
+
+  {# lib_span : colonnes couvertes par le libellé d'une ligne de décompte #}
+  {% set lib_span = 5 if d.a_chiffrage else 2 %}
+  <table class="items">
+    <thead>
+      {% if d.a_chiffrage %}
+      <tr>
+        <th class="c-num">N°</th>
+        <th class="c-des">Désignation</th>
+        <th class="c-uni">Unité</th>
+        <th class="c-qte">Qté</th>
+        <th class="c-pu">PU HT</th>
+        <th class="c-tot">Total HT</th>
+      </tr>
+      {% else %}
+      <tr>
+        <th class="c-num">N°</th>
+        <th class="c-des" colspan="2">Description</th>
+      </tr>
+      {% endif %}
+    </thead>
+    <tbody>
+    {% set ns = namespace(n=0) %}
+    {% for ch in d.chapitres %}
+      {% if d.a_chapitres_titres %}
+      <tr class="chapter"><td colspan="{{ lib_span + 1 }}">{{ loop.index }} — {{ ch.titre }}</td></tr>
+      {% endif %}
+      {% set chn = loop.index %}
+      {% for l in ch.lignes %}
+      {% set ns.n = ns.n + 1 %}
+      <tr>
+        <td class="c-num">{{ chn ~ "." ~ loop.index if d.a_chapitres_titres else ns.n }}</td>
+        {% if d.a_chiffrage %}
+        <td class="c-des">
+          <div class="des-title">{{ l.designation }}</div>
+          {% if l.detail %}<div class="des-detail">{{ l.detail }}</div>{% endif %}
+        </td>
+        <td class="c-uni">{{ l.unite or "—" }}</td>
+        <td class="c-qte">{{ l.qte_f }}</td>
+        <td class="c-pu">{{ l.pu_f }}</td>
+        <td class="c-tot">{{ l.total_f }}</td>
+        {% else %}
+        <td class="c-des" colspan="2">
+          <div class="des-title">{{ l.designation }}</div>
+          {% if l.detail %}<div class="des-detail">{{ l.detail }}</div>{% endif %}
+        </td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+      {% if d.a_chiffrage and d.a_chapitres_titres %}
+      <tr class="subtotal">
+        <td colspan="5">Sous-total chapitre {{ chn }} HT</td>
+        <td class="c-tot">{{ ch.sous_total_f }}</td>
+      </tr>
+      {% endif %}
+    {% endfor %}
+    </tbody>
+
+    {# ---- Décompte : bloc des prix, toujours en lignes libellé | montant ---- #}
+    <tbody class="dec-block">
+    {% for t in d.decompte %}
+    <tr class="dec{% if t.est_sous_total %} dec-st{% endif %}{% if loop.last %} dec-final{% endif %}">
+      <td class="dec-lib" colspan="{{ lib_span }}">{{ t.libelle }}</td>
+      <td class="c-tot">{{ t.montant_f }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <section class="mentions">
+    {% if d.autoliquidation %}
+    <p class="m-italic">TVA non applicable — Autoliquidation par le preneur, article 283-2 nonies du Code général des impôts.</p>
+    {% endif %}
+    {% for m in d.mentions %}<p>{{ m }}</p>{% endfor %}
+    {% if d.acompte_f %}
+    <p><strong>Modalités de règlement :</strong> acompte de {{ d.acompte_pct }} % au démarrage du chantier, soit {{ d.acompte_f }} ; facturation en fin de mois suivant l'avancement du chantier.</p>
+    {% endif %}
+    <p><strong>Contact :</strong> ets.vaz@gmail.com</p>
+  </section>
+
+  {% if d.type_doc.value == "devis" %}
+  <table class="sign">
+    <tr>
+      <td>
+        <div class="sign-title">Bon pour accord — Signature du client</div>
+        <div class="sign-hint">(précédée de la mention « Bon pour travaux »)</div>
+        <div class="sign-date">Date : ______________________</div>
+      </td>
+      <td><div class="sign-title">Cachet et signature de l'entreprise</div></td>
+    </tr>
+  </table>
+  {% endif %}
+
+</main>
+</body>
+</html>

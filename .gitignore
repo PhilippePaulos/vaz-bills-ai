@@ -1,0 +1,19 @@
+# Secrets
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+
+# IDE / OS
+.idea/
+.DS_Store
+
+# Données réelles (devis/factures clients) et sorties générées
+examples/
+extraction_*.json
+vaz-devis/data/
+vaz-devis/out/
+src/rendering/out/
