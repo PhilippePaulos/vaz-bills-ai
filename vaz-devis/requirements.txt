@@ -1,3 +1,0 @@
-weasyprint
-jinja2
-pydantic
